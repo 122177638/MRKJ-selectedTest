@@ -1,4 +1,116 @@
 /* eslint-disable */
+/*
+* 渠道135支付
+*/
+export const payMoney135 = (function(){
+  const payMoney = function(price, uid, orderid) {	
+    var payType = 1;
+    var bussiCode = 'business006';
+    var bussiDesc = '简测';
+    var goodsCode = 'zhimingQudao135';
+    var goodsDesc = '简测';
+    var money = price;
+    var userId = uid;
+    var extContent = orderid;
+    if (get_os() == 2) {
+        setupWebViewJavascriptBridge(function (bridge) {
+            bridge.callHandler('peanutPay', {'payType': payType, 'bussiCode': bussiCode, 'bussiDesc': bussiDesc, 'goodsCode': goodsCode, 'goodsDes': goodsDesc, 'price': money, 'userId': userId, 'extContent': extContent}, function responseCallback (responseData) {});
+        });
+    } else {
+        window.news.peanutPay(payType, bussiCode, bussiDesc, goodsCode, goodsDesc, money, userId, extContent);
+    }
+  }
+  function setupWebViewJavascriptBridge (callback) {
+    if (window.WebViewJavascriptBridge) { return callback(window.WebViewJavascriptBridge); }
+    if (window.WVJBCallbacks) { return window.WVJBCallbacks.push(callback); }
+    window.WVJBCallbacks = [callback];
+    var WVJBIframe = document.createElement('iframe');
+    WVJBIframe.style.display = 'none';
+    WVJBIframe.src = 'wvjbscheme://__BRIDGE_LOADED__';
+    document.documentElement.appendChild(WVJBIframe);
+    setTimeout(function () { document.documentElement.removeChild(WVJBIframe) }, 0)
+  }
+  function get_os () {
+    var userAgent = navigator.userAgent || navigator.vendor || window.opera;
+    if (userAgent.match(/iPad/i) || userAgent.match(/iPhone/i) || userAgent.match(/iPod/i)) {
+        return 2;
+    }	else {
+        return 1;
+    }
+  }
+  const PayResultCallBack = function(res){
+      if(get_os()==2){
+      }else{
+          var res = JSON.parse(res);
+      }
+      // alert(res.resultCode);
+      if(res.resultCode==1){
+          if(res.extContent){
+              var orderid=res.extContent;
+          }
+          // alert('成功:'+orderid);
+  //            if(typeXM=='jiance2q'){
+  //                location.href="https://www.yixueqm.com/jianceH5/testResultQWC.html?orderid=<!--{$orderid}-->";
+  //            }else
+          if(orderid.slice(0,3) == 'JCQ'){
+            window.location.href="https://www.yixueqm.com/jianceH5/testResultQWC.html?orderid="+orderid;
+          } else{
+            window.location.href="https://www.yixueqm.com/jianceH5/testResult.html?orderid="+orderid;
+          }
+
+      }else if(res.resultCode==2){
+          showAlert("#payWait-msg");
+      }else if(res.resultCode==0){
+          showAlert("#payError-msg");
+      }
+  }
+  return {
+    payMoney,
+    PayResultCallBack
+  }
+})()
+
+/**
+ * url参数转JSON
+ * @param {string} 网址
+ */
+export const parseQueryString = function(url) {
+  var reg_url = /^[^\?]+\?([\w\W]+)$/,
+    reg_para = /([^&=]+)=([\w\W]*?)(&|$|#)/g,
+    arr_url = reg_url.exec(url),
+    ret = {}
+  if (arr_url && arr_url[1]) {
+    var str_para = arr_url[1], result
+    while ((result = reg_para.exec(str_para)) != null) {
+      ret[result[1]] = result[2]
+    }
+  }
+  return ret
+}
+/**
+ * 生成唯一ID
+ * @param {Number} len ID长度
+ * @param {Number} radix ID复杂度
+ */
+export const uuid = function(len, radix) {
+  var chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'.split('')
+  var uuid = [], i
+  radix = radix || chars.length;
+  if (len) {
+    for (i = 0; i < len; i++) uuid[i] = chars[0 | Math.random() * radix];
+  } else {
+    var r;
+    uuid[8] = uuid[13] = uuid[18] = uuid[23] = '-';
+    uuid[14] = '4';
+    for (i = 0; i < 36; i++) {
+      if (!uuid[i]) {
+        r = 0 | Math.random() * 16;
+        uuid[i] = chars[(i == 19) ? (r & 0x3) | 0x8 : r];
+      }
+    }
+  }
+  return uuid.join('');
+}
 /**
  * 存储localStorage
  */

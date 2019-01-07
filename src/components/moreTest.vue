@@ -1,6 +1,6 @@
 <template>
-  <div :class="islist?'load_moreTest':'moreTest_container'" v-if="moreTestData != ''">
-  	<div class="moreTest_title" v-if="!islist"><h3>更多测评</h3><p @click="navigateTomorepage()">查看全部</p></div>
+  <div class="moreTest_container">
+  	<div class="moreTest_title"><h3>更多测评</h3><p @click="navigateTomorepage()">查看全部</p></div>
   	<ul class="moreTest_list">
   		<li class="moreTest_item" v-for="item in moreTestData" @click="navigateToEvent(item)">
   			<div class="item_l"><img :src="item.imgurl"/><span class="ttype">主编力荐</span></div>
@@ -12,11 +12,11 @@
   			<div class="item_r">开始测试</div>
   		</li>
   	</ul>
-	<p v-if="islist" v-show="loadshow" class="loadpromt">{{loadpromt}}</p>  
   </div>
 </template>
 
 <script>
+import { parseQueryString } from '../config/mUtils'
 export default {
   data () {
     return {
@@ -24,34 +24,25 @@ export default {
       loadshow: false,
       moreTestData: [],
       throttle_B: false,
-      online: 1,
-      loadpromt: '加载中....'
+			online: 1,
+			urlparams: '',
+			typeid: 1
     }
   },
-  props: ['islist'],
   mounted () {
-    if (this.islist) {
-      this.online = 0
-      window.addEventListener('scroll', this.Pulluploading, false)
-    }
+		this.urlparams = parseQueryString(window.location.href); // 参数
+		this.typeid = this.urlparams.typeid ? this.urlparams.typeid : this.typeid
+	  localStorage.setItem('typeid', this.typeid)
     this.getmoreTest()
   },
   methods: {
     getmoreTest () {
-      let _self = this
-      this.$ajax.post('https://www.yixueqm.com/jiance/index.php/Home-Index-moreselftestsup', {page: _self.page, online: _self.online, typeid: localStorage.getItem('typeid')}).then((response) => {
+      let _self = this;
+      this.$ajax.post('https://www.yixueqm.com/jiance/index.php/Home-Index-moreselftestsup', {page: _self.page, online: 1, typeid: localStorage.getItem('typeid')}).then((response) => {
         if (response.data.code) {
           let data = JSON.parse(response.data.content)
           _self.moreTestData = _self.moreTestData.concat(data)
           _self.loadshow = false
-          if (document.body.scrollHeight < window.screen.height) {
-            _self.loadshow = true
-            window.removeEventListener('scroll', _self.Pulluploading, false)
-            _self.loadpromt = '没有更多了'
-          }
-        } else {
-          window.removeEventListener('scroll', _self.Pulluploading, false)
-          _self.loadpromt = '没有更多了'
         }
       })
     },
@@ -60,42 +51,17 @@ export default {
     },
     navigateTomorepage () {
       window.location.href = 'totalTest.html'
-    },
-	// 上拉加载
-    Pulluploading () {
-      var _self = this
-      var scrollTop = document.documentElement.scrollTop || document.body.scrollTop
-      var scrollHeight = document.body.scrollHeight
-      var clientHeight = window.screen.height
-      if (scrollHeight - clientHeight < scrollTop + 1) {
-        _self.loadshow = true
-        if (!_self.throttle_B) {
-          setTimeout(function () {
-            _self.page++
-            _self.getmoreTest()
-            _self.throttle_B = false
-          }, 300)
-          _self.throttle_B = true
-        } else {
-          return
-        }
-      }
     }
   }
 }
 </script>
 
-<style lang="scss">
+<style lang="scss" scoped>
 	$redcolor:#F44D4D;
-	.load_moreTest{
-		padding:0 10px;
-		background-color:#FFFFFF;
-	}
 	.moreTest_container{
 		background-color:#FFFFFF;
 		padding:30px 10px;
 	}
-	
 	.moreTest_title{
 		display: flex;
 		align-items: center;
@@ -175,7 +141,4 @@ export default {
 			color:$redcolor;
 		}
 	}
-	
-
-	.loadpromt{padding:10px;text-align: center;font-size:14px;color:#999999;}
 </style>

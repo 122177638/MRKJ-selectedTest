@@ -3,7 +3,8 @@
         <div class="banner">
   		    <img :src="pageData.bannelImg" width="100%" alt="banner"/>
   	    </div>
-        <section class="paipan_container">
+        <p class="order">订单号：{{orderid}}</p>
+        <!-- <section class="paipan_container">
             <div class="usermsg_wrap">
                 <h2 class="usermsg_title">个人信息</h2>
                 <ul class="usermsg_content">
@@ -135,9 +136,6 @@
                             <td colspan="2"><p>胎元:</p><p class="red_words">{{pageData.taiyuan}}</p></td>
                             <td colspan="2"><p>日空:</p><p class="red_words">{{pageData.rikong}}</p></td>
                         </tr>
-                        <!-- <tr>
-                            <td colspan="10" class="hr_words">起大运：出生后年月起大运</td>
-                        </tr> -->
                         <tr>
                             <td >大运岁数</td>
                             <td v-for="item in pageData.dayun">{{item}}</td>
@@ -154,17 +152,17 @@
                     </tbody>
                 </table>
             </div>
-        </section>
+        </section> -->
 
         <section class="test_container">
             <div class="test_wrap" v-for="item in pageData.jieguo">
-                <h3 class="test_title">{{item.title}}</h3>
-                <ul class="test_content">
+                <h3 :class="['test_title',{'on':item.isOpen}]" @click="openEvent(item)">{{item.title}}</h3>
+                <ul class="test_content" v-show="item.isOpen">
                     <li class="test_list" v-for="item in item.content">
-                        <h4 class="test_c_t">{{item.heading}}</h4>
+                        <h4 class="test_c_t" v-if="item.heading">{{item.heading}}</h4>
                         <ul class="test_c_c">
                             <li class="test_c_list" v-for="item in item.content">
-                                <h5>{{item.strong}}</h5>
+                                <h5 v-if="item.strong">{{item.strong}}</h5>
                                 <div v-if="item.imgurl" class="lrflex">
                                     <img :src="item.imgurl" class="lrimg" alt="">
                                     <p>{{item.text}}</p>
@@ -177,22 +175,26 @@
             </div>
         </section>
         <more-test></more-test>
+        <m-footer></m-footer>
     </div>
 </template>
 
 <script>
 import moreTest from '@components/moreTest'
 import { parseQueryString } from '../../config/mUtils'
+import mFooter from '@components/mFooter'
 export default {
   data () {
     return {
+      isShow: false,
       pageData: [],
       urlparams: '',
       orderid: ''
     }
   },
   components: {
-    moreTest
+    moreTest,
+    mFooter
   },
   mounted () {
     this.urlparams = parseQueryString(window.location.href)
@@ -213,11 +215,12 @@ export default {
     },
     axios () {
       let _self = this
-      this.$ajax.post('https://www.yixueqm.com/jiance/index.php/Home-jieguoye-index', {orderid: this.orderid})
+      this.$ajax.post('https://www.yixueqm.com/jiance2/index.php/Home-jieguoye-index', {orderid: this.orderid})
         .then((response) => {
-            _self.pageData = response.data
-            document.title = _self.pageData.big_title
-            console.log(response)
+            _self.pageData = response.data;
+            document.title = _self.pageData.big_title;
+            _self.$set(_self.pageData.jieguo[0], 'isOpen', true);
+            console.log(_self.pageData)
         })
     },
     switchBigEvent (key) {
@@ -229,6 +232,9 @@ export default {
     },
     closeEvent (item) {
       item.isshow = false
+    },
+    openEvent (item) {
+        this.$set(item, 'isOpen', !item.isOpen)
     }
   }
 }
@@ -237,55 +243,87 @@ export default {
 <style lang="scss">
     .lrflex{overflow: hidden;}
     .lrimg{float:right;width:80px;}
-    .testResult_container{background-color:#FFF9F5;}
-    .paipan_container{
-        padding:0 10px;
-        .usermsg_wrap{
-            margin:10px 0;
-            border:1px solid #cccccc;
-            .usermsg_title{
-                width: 100%;
-                font-weight: 400;
-                color:#333333;
-                font-size:18px;
-                height:40px;
-                line-height: 40px;
-                background-color:#fed3d0;
-                border-bottom:1px solid #cccccc;
-                text-align: center;
-            }
-            .usermsg_content{
-                padding:10px 15px;
-                overflow: hidden;
-                li{
-                    float: left;
-                    min-width: 50%;
-                    margin-bottom: 10px;
-                    font-size:15px;
-                    color:#333333;
-                    span{color:#999999;}
-                    &:nth-child(2){
-                        float: right;
-                        text-align: right;
-                    }
-                    &:nth-last-child(1){
-                        margin-bottom: 0;
-                    }
-                    &:nth-last-child(2){
-                        margin-bottom: 0;
-                    }
-                }
-            }
-        }
+    .testResult_container{background-color:#F6F0EA;}
+    .order{padding:10px;font-size:14px;color:#333333;background-color:#ffffff;}
+    // 个人信息
+    // .paipan_container{
+    //     padding:0 10px;
+    //     .usermsg_wrap{
+    //         margin:10px 0;
+    //         border:1px solid #cccccc;
+    //         .usermsg_title{
+    //             width: 100%;
+    //             font-weight: 400;
+    //             color:#333333;
+    //             font-size:18px;
+    //             height:40px;
+    //             line-height: 40px;
+    //             background-color:#fed3d0;
+    //             border-bottom:1px solid #cccccc;
+    //             text-align: center;
+    //         }
+    //         .usermsg_content{
+    //             padding:10px 15px;
+    //             overflow: hidden;
+    //             li{
+    //                 float: left;
+    //                 min-width: 50%;
+    //                 margin-bottom: 10px;
+    //                 font-size:15px;
+    //                 color:#333333;
+    //                 span{color:#999999;}
+    //                 &:nth-child(2){
+    //                     float: right;
+    //                     text-align: right;
+    //                 }
+    //                 &:nth-last-child(1){
+    //                     margin-bottom: 0;
+    //                 }
+    //                 &:nth-last-child(2){
+    //                     margin-bottom: 0;
+    //                 }
+    //             }
+    //         }
+    //     }
+    // }
+    .test_container{
+        overflow: hidden;
+        margin:15px 10px;
+        background-color:#ffffff;
+        border-radius: 6px;
     }
     .test_wrap{
-        margin-top:30px;
-        &:nth-last-child(1){padding-bottom: 30px;}
+        margin-top:20px;
+        &:nth-last-child(1){padding-bottom: 20px;}
         .test_title{
+            margin:0 10px;
+            padding:0 10px;
+            box-sizing: border-box;
+            border-radius: 6px;
+            height:40px;
+            line-height: 40px;
+            background-color:#FD8383;
             font-size:18px;
-            color:#333333;
-            text-align: center;
+            color:#ffffff;
             position: relative;
+            &::after{
+                content:'';
+                width:20px;
+                height:9px;
+                display: inline-block;
+                background:url('../../assets/img/icon_xiala.png') no-repeat;
+                background-size:100% 100%;
+                position: absolute;
+                right:10px;
+                top:50%;
+                margin-top:-4.5px;
+                transform: rotate(0deg);
+            }
+        }
+        .test_title.on{
+             &::after{
+                transform: rotate(180deg);
+            }
         }
         .test_content{
             padding:0 10px;
@@ -311,261 +349,261 @@ export default {
         }
     }
 
-    // 命盘
-    .ziwei_mingpan {
-        overflow: hidden;
-        background: #f8f8f8;
-        position: relative;
-    }
+    // 紫薇命盘
+    // .ziwei_mingpan {
+    //     overflow: hidden;
+    //     background: #f8f8f8;
+    //     position: relative;
+    // }
 
-    .zwmp_box {
-    overflow: hidden;
-    border-left: 1px solid #d7d7d7;
-    border-top: 1px solid #d7d7d7;
-    position: relative;
-    .mp_tr {
-        position: relative;
-        height: 100px;
-        float: left;
-        border-right: 1px solid #d7d7d7;
-        border-bottom: 1px solid #d7d7d7;
-        width: 25%;
-        text-align: center;
-        padding: 10px 0;
-        box-sizing: border-box;
-        background: #fff4fc url('../../assets/img/bg_mingpan.jpg') no-repeat center center;
-        background-size: 100%;
-    }
-    }
+    // .zwmp_box {
+    // overflow: hidden;
+    // border-left: 1px solid #d7d7d7;
+    // border-top: 1px solid #d7d7d7;
+    // position: relative;
+    // .mp_tr {
+    //     position: relative;
+    //     height: 100px;
+    //     float: left;
+    //     border-right: 1px solid #d7d7d7;
+    //     border-bottom: 1px solid #d7d7d7;
+    //     width: 25%;
+    //     text-align: center;
+    //     padding: 10px 0;
+    //     box-sizing: border-box;
+    //     background: #fff4fc url('../../assets/img/bg_mingpan.jpg') no-repeat center center;
+    //     background-size: 100%;
+    // }
+    // }
 
-    .public_red {
-    color: #fc0c0f;
-    }
+    // .public_red {
+    // color: #fc0c0f;
+    // }
 
-    .red_words {
-    color: #d70000;
-    }
+    // .red_words {
+    // color: #d70000;
+    // }
 
-    .mp_tr_words_left {
-    position: absolute;
-    top: 2px;
-    left: 2px;
-    font-size: 12px;
-    p {
-        display: inline-block;
-        width: 14px;
-        text-align: center;
-        vertical-align: top;
-    }
-    }
+    // .mp_tr_words_left {
+    // position: absolute;
+    // top: 2px;
+    // left: 2px;
+    // font-size: 12px;
+    // p {
+    //     display: inline-block;
+    //     width: 14px;
+    //     text-align: center;
+    //     vertical-align: top;
+    // }
+    // }
 
-    .mp_tr_words {
-    position: absolute;
-    bottom: 20px;
-    left: 0;
-    right: 0;
-    margin: auto;
-    width: 50px;
-    height: 40px;
-    }
+    // .mp_tr_words {
+    // position: absolute;
+    // bottom: 20px;
+    // left: 0;
+    // right: 0;
+    // margin: auto;
+    // width: 50px;
+    // height: 40px;
+    // }
 
-    .zwmp_box .mp_tr {
-    .words {
-        color: #611b7b;
-        box-sizing: border-box;
-        display: block;
-        font-size: 16px;
-    }
-    .fangda {
-        font-size: 14px;
-        color: #d70000;
-        margin-top: 5px;
-        display: block;
-        i {
-        display: inline-block;
-        background: url('../../assets/img/icon_fangda.png') no-repeat center center;
-        width: 13px;
-        height: 13px;
-        background-size: 100% 100%;
-        margin-right: 5px;
-        }
-    }
-    }
+    // .zwmp_box .mp_tr {
+    // .words {
+    //     color: #611b7b;
+    //     box-sizing: border-box;
+    //     display: block;
+    //     font-size: 16px;
+    // }
+    // .fangda {
+    //     font-size: 14px;
+    //     color: #d70000;
+    //     margin-top: 5px;
+    //     display: block;
+    //     i {
+    //     display: inline-block;
+    //     background: url('../../assets/img/icon_fangda.png') no-repeat center center;
+    //     width: 13px;
+    //     height: 13px;
+    //     background-size: 100% 100%;
+    //     margin-right: 5px;
+    //     }
+    // }
+    // }
 
-    .box_center {
-    height: 200px;
-    width: 50%;
-    position: absolute;
-    top: 100px;
-    left: 25%;
-    z-index: 3;
-    overflow: hidden;
-    font-size: 12px;
-    box-sizing: border-box;
-    border-right: 1px solid #d7d7d7;
-    border-bottom: 1px solid #d7d7d7;
-    padding: 5px;
-    background: #fff;
-    }
+    // .box_center {
+    // height: 200px;
+    // width: 50%;
+    // position: absolute;
+    // top: 100px;
+    // left: 25%;
+    // z-index: 3;
+    // overflow: hidden;
+    // font-size: 12px;
+    // box-sizing: border-box;
+    // border-right: 1px solid #d7d7d7;
+    // border-bottom: 1px solid #d7d7d7;
+    // padding: 5px;
+    // background: #fff;
+    // }
 
-    .bc_list {
-    overflow: hidden;
-    margin-top: 5px;
-    .l_words {
-        width: 20%;
-        height: 24px;
-        float: left;
-    }
-    .r_infor {
-        width: 80%;
-        float:right;
-    }
-    }
+    // .bc_list {
+    // overflow: hidden;
+    // margin-top: 5px;
+    // .l_words {
+    //     width: 20%;
+    //     height: 24px;
+    //     float: left;
+    // }
+    // .r_infor {
+    //     width: 80%;
+    //     float:right;
+    // }
+    // }
 
-    .right {
-    float: right;
-    }
+    // .right {
+    // float: right;
+    // }
 
-    .bc_list .r_infor_date {
-    width: 25%;
-    float: left;
-    text-align: center;
-    p {
-        color: #d70000;
-    }
-    }
+    // .bc_list .r_infor_date {
+    // width: 25%;
+    // float: left;
+    // text-align: center;
+    // p {
+    //     color: #d70000;
+    // }
+    // }
 
-    .sl_content {
-    display: none;
-    }
+    // .sl_content {
+    // display: none;
+    // }
 
-    .zwmp_box .mp_tr {
-    &:nth-child(6), &:nth-child(8) {
-        margin-left: 50%;
-    }
-    }
+    // .zwmp_box .mp_tr {
+    // &:nth-child(6), &:nth-child(8) {
+    //     margin-left: 50%;
+    // }
+    // }
 
-    .zwmp_box_pop {
-    height: 400px;
-    background: #fff4fc url('../../assets/img/bg_mingpan.jpg') no-repeat center center;
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    z-index: 4;
-    background-size: 100%;
-    border-top: 1px solid #d7d7d7;
-    .icon_close {
-        position: absolute;
-        right: 5px;
-        top: 5px;
-        display: block;
-        background: url('../../assets/img/icon_suoxiao.png') no-repeat left center;
-        background-size: 18px auto;
-        padding-left: 18px;
-        color: #d70000;
-        -webkit-tap-highlight-color: transparent;
-    }
-    }
+    // .zwmp_box_pop {
+    // height: 400px;
+    // background: #fff4fc url('../../assets/img/bg_mingpan.jpg') no-repeat center center;
+    // position: absolute;
+    // top: 0;
+    // left: 0;
+    // right: 0;
+    // bottom: 0;
+    // z-index: 4;
+    // background-size: 100%;
+    // border-top: 1px solid #d7d7d7;
+    // .icon_close {
+    //     position: absolute;
+    //     right: 5px;
+    //     top: 5px;
+    //     display: block;
+    //     background: url('../../assets/img/icon_suoxiao.png') no-repeat left center;
+    //     background-size: 18px auto;
+    //     padding-left: 18px;
+    //     color: #d70000;
+    //     -webkit-tap-highlight-color: transparent;
+    // }
+    // }
 
-    .zwmp_bp_left {
-    position: absolute;
-    top: 5px;
-    left: 5px;
-    }
-    .zwmp_bp_center {
-    width: 200px;
-    height: 200px;
-    position: absolute;
-    left: 0;
-    right: 0;
-    top: 0;
-    bottom: 0;
-    margin: auto;
-    text-align: center;
-    }
+    // .zwmp_bp_left {
+    // position: absolute;
+    // top: 5px;
+    // left: 5px;
+    // }
+    // .zwmp_bp_center {
+    // width: 200px;
+    // height: 200px;
+    // position: absolute;
+    // left: 0;
+    // right: 0;
+    // top: 0;
+    // bottom: 0;
+    // margin: auto;
+    // text-align: center;
+    // }
 
-    .zwmp_box_pop {
-    .left_bottom {
-        font-size: 20px;
-        position: absolute;
-        left: 5px;
-        bottom: 10px;
-    }
-    .right_bottom {
-        font-size: 20px;
-        position: absolute;
-        right: 5px;
-        bottom: 10px;
-        text-align: right;
-    }
-    }
+    // .zwmp_box_pop {
+    // .left_bottom {
+    //     font-size: 20px;
+    //     position: absolute;
+    //     left: 5px;
+    //     bottom: 10px;
+    // }
+    // .right_bottom {
+    //     font-size: 20px;
+    //     position: absolute;
+    //     right: 5px;
+    //     bottom: 10px;
+    //     text-align: right;
+    // }
+    // }
 
-    .zwmp_bp_left p {
-        float: left;
-        width: 19px;
-        text-align: center;
-        margin-right: 5px;
-        font-size:14px;
-        color:#611b7b;
-    }
+    // .zwmp_bp_left p {
+    //     float: left;
+    //     width: 19px;
+    //     text-align: center;
+    //     margin-right: 5px;
+    //     font-size:14px;
+    //     color:#611b7b;
+    // }
 
-    .zwmp_bp_center {
-    .words_center {
-        font-size: 30px;
-        color: #d70000;
-    }
-    .sui {
-        font-size: 18px;
-        margin: 5px 0;
-    }
-    .b_nubmer {
-        overflow: hidden;
-        p {
-        float: left;
-        width: 16.66%;
-        }
-    }
-    }
+    // .zwmp_bp_center {
+    // .words_center {
+    //     font-size: 30px;
+    //     color: #d70000;
+    // }
+    // .sui {
+    //     font-size: 18px;
+    //     margin: 5px 0;
+    // }
+    // .b_nubmer {
+    //     overflow: hidden;
+    //     p {
+    //     float: left;
+    //     width: 16.66%;
+    //     }
+    // }
+    // }
 
-    .zwmp_box_pop {
-    .left_bottom p, .right_bottom p {
-        width: 19px;
-        text-align: center;
-        margin-right: 5px;
-        float: left;
-    }
-    }
-    // 八字命盘
-    .liunian_table { margin:10px 0;color: #512a18;font-size:14px;}
-    table {border-spacing: 0;}
-    .red_words {color: #a40b1c;}
-    .red {color: #d52800;}
-    .liunian_table table {width: 100%;background: #fff4d6;margin-bottom: 5px;border: 1px solid #ddbd67;}
-    .liunian_table td.bg_col_y {
-        background: #f8d0a8;
-        color: #763515;
-        border-right: 1px solid #ddbd67;
-        border-bottom: 1px solid #ddbd67;
-    }
-    .liunian_table td {
-        width: 10%;
-        padding: 5px 0;
-        box-sizing: border-box;
-        border-right: 1px solid #ddbd67;
-        border-bottom: 1px solid #ddbd67;
-        text-align: center;
-    }
-    .hr_words {
-        text-align: center;
-        height: 30px;
-        line-height: 30px;
-        color: #a40b1c;
-        border-left: 1px solid #ddbd67;
-    }
-    .liunian_table li {float: left;width: 25%;}
-    .liunian_table li p {font-weight: 700;font-size: 20px;}
-    .liunian_table td.bg_red {background: #a61222;color: #fff4d6;}
+    // .zwmp_box_pop {
+    // .left_bottom p, .right_bottom p {
+    //     width: 19px;
+    //     text-align: center;
+    //     margin-right: 5px;
+    //     float: left;
+    // }
+    // }
+    // // 八字命盘
+    // .liunian_table { margin:10px 0;color: #512a18;font-size:14px;}
+    // table {border-spacing: 0;}
+    // .red_words {color: #a40b1c;}
+    // .red {color: #d52800;}
+    // .liunian_table table {width: 100%;background: #fff4d6;margin-bottom: 5px;border: 1px solid #ddbd67;}
+    // .liunian_table td.bg_col_y {
+    //     background: #f8d0a8;
+    //     color: #763515;
+    //     border-right: 1px solid #ddbd67;
+    //     border-bottom: 1px solid #ddbd67;
+    // }
+    // .liunian_table td {
+    //     width: 10%;
+    //     padding: 5px 0;
+    //     box-sizing: border-box;
+    //     border-right: 1px solid #ddbd67;
+    //     border-bottom: 1px solid #ddbd67;
+    //     text-align: center;
+    // }
+    // .hr_words {
+    //     text-align: center;
+    //     height: 30px;
+    //     line-height: 30px;
+    //     color: #a40b1c;
+    //     border-left: 1px solid #ddbd67;
+    // }
+    // .liunian_table li {float: left;width: 25%;}
+    // .liunian_table li p {font-weight: 700;font-size: 20px;}
+    // .liunian_table td.bg_red {background: #a61222;color: #fff4d6;}
 </style>
 

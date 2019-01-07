@@ -28,21 +28,21 @@ axios.interceptors.request.use((config) => {
 
 axios.interceptors.response.use((res) => {
   Indicator.close()
-  return res
+  return res;
 }, (error) => {
   console.log('好多人在访问呀，请重新试试[timeout]')
   Indicator.close()
   if (error) {
-    let errortime = null
-    clearTimeout(errortime)
-    errortime = setTimeout(() => {
-      Toast({
-        message: error.message,
-        position: 'middle',
-        duration: 2000
-      })
-      clearTimeout(errortime)
-    }, 0)
+    // let errortime = null
+    // clearTimeout(errortime)
+    // errortime = setTimeout(() => {
+    //   Toast({
+    //     message: error.message,
+    //     position: 'middle',
+    //     duration: 2000
+    //   })
+    //   clearTimeout(errortime)
+    // }, 0)
   }
   return Promise.reject(error)
 })

@@ -3,11 +3,12 @@
     <p>data-type</p>
     <p>默认:1; 农历_1, 公历_0</p>
     <p>data-date</p>
-    <p>默认:当前时间；例：2017-02-09</p>
+    <p>默认:当前时间；例：2017-02-09-0</p>
     <p>data-id</p>
     <p>默认:空；需要赋值的input id</p>
  */
-let lCalendar = (function() {
+/* eslint-disable */
+var lCalendar = (function() {
     if (!("classList" in document.documentElement)) {
         Object.defineProperty(HTMLElement.prototype, 'classList', {
             get: function() {
@@ -49,19 +50,20 @@ let lCalendar = (function() {
             }
         });
     }
-    var MobileCalendar = function(callback) {
+    var MobileCalendar = function(id,callback) {
         this.gearDate;
         this.minY = 1940;
         this.minM = 1,
         this.minD = 1,
         this.minh = 1,
-        this.maxY = 2020,
+        this.maxY = 2030,
         this.maxM = 12,
         this.maxD = 31,
-        this.maxh = 12,
+        this.maxh = 13,
         this.type = 1, //0公历，1农历
         this.sss = null,
-        this.success = callback || function(){}
+        this.success = callback || function(){},
+        this.init(id)
     }
     MobileCalendar.prototype = {
         init: function(id) {
@@ -167,29 +169,32 @@ let lCalendar = (function() {
             //呼出日期插件
             function popupDate(e) {
                 // 阻止弹窗滚动
-                var scrollTop = window.pageYOffset  
+                var scrollTop = window.pageYOffset
                 || document.documentElement.scrollTop  
                 || document.body.scrollTop  
                 || 0;
                 _self.sss=scrollTop;//保存当前滚动条位置
                 document.body.style.top=-1*scrollTop+"px";
                 document.body.style.position='fixed';
+				document.body.style.width='100%';
                 // 
                 document.activeElement.blur();//阻止获得焦点
                 _self.gearDate = document.createElement("div");
                 _self.gearDate.className = "gearDate";
                 _self.gearDate.innerHTML = '<div class="date_ctrl slideInUp1">' +
-                    '<div class="date_info_box lcalendar_info">2016年12月29日' +
-                    '</div>' +
+                    '<div class="date_class_top">' +
+                    '<div class="date_btn lcalendar_cancel">取消</div>' +
                     '<div class="date_class_box">' +
                     '<div class="date_class lcalendar_gongli">公历</div>' +
                     '<div class="date_class lcalendar_nongli">农历</div>' +
+                    '</div>' +
+                    '<div class="date_btn lcalendar_finish">完成</div>' +
                     '</div>' +
                     '<div class="date_roll_mask">' +
                     '<div class="date_roll">' +
                     '<div>' +
                     '<div class="gear date_yy" data-datetype="date_yy"></div>' +
-                    '<div class="date_grid">' +
+                    '<div class="date_grid select_gird">' +
                     '</div>' +
                     '</div>' +
                     '<div>' +
@@ -208,10 +213,6 @@ let lCalendar = (function() {
                     '</div>' +
                     '</div>' +
                     '</div>' +
-                    '</div>' +
-                    '<div class="date_btn_box">' +
-                    '<div class="date_btn lcalendar_cancel">取消</div>' +
-                    '<div class="date_btn lcalendar_finish">确定</div>' +
                     '</div>' +
                     '</div>';
                 document.body.appendChild(_self.gearDate);
@@ -323,11 +324,12 @@ let lCalendar = (function() {
                     dd: date.getDate() - 1,
                     hh: 0,
                 };
-                if (/^\d{4}-\d{1,2}-\d{1,2}$/.test(_self.trigger.getAttribute('data-date'))) {
-                    rs = _self.trigger.getAttribute('data-date').match(/(^|-)\d{1,4}/g);
+                if (/^\d{4}-\d{1,2}-\d{1,2}-\d{1,2}$/.test(_self.trigger.getAttribute('data-date'))) {
+                    var rs = _self.trigger.getAttribute('data-date').match(/(^|-)\d{1,4}/g);
                     dateArr.yy = rs[0] - _self.minY;
                     dateArr.mm = rs[1].replace(/-/g, "") - 1;
                     dateArr.dd = rs[2].replace(/-/g, "") - 1;
+                    dateArr.hh = rs[3].replace(/-/g, "");
                 } else {
                     dateArr.yy = dateArr.yy + 1900 - _self.minY;
                 };
@@ -346,7 +348,15 @@ let lCalendar = (function() {
                     var date_dd=dateArr.dd+1;
                     var date_hh=dateArr.hh;
                     var objDate=calendarConvert(0,date_yy,date_mm,date_dd,date_hh);//返回转换对象
-                    if(objDate.mm<0) objDate.mm=-objDate.mm+1;//返回的负数为 闰年
+
+                    // 判断是否为闰年
+                    var rmNum=LunarCal[objDate.yy - _self.minY].Intercalation?LunarCal[objDate.yy - _self.minY].Intercalation:0;
+                    if(rmNum >= objDate.mm){
+                        objDate.mm = objDate.mm;
+                    }else{
+                        objDate.mm = objDate.mm+1;
+                    }
+                    if(objDate.mm<0) objDate.mm=-objDate.mm+1;//返回的负数为 闰月
                     _self.gearDate.querySelector(".date_yy").setAttribute("val", objDate.yy - _self.minY);
                     _self.gearDate.querySelector(".date_mm").setAttribute("val", objDate.mm-1);
                     _self.gearDate.querySelector(".date_dd").setAttribute("val", objDate.dd-1);
@@ -468,7 +478,6 @@ let lCalendar = (function() {
                     var ddVal = parseInt(date_dd.getAttribute("val"));
                     //返回月份的天数
                     var maxMonthDays = calcDays(yyVal, mmVal);
-                    // console.log(yyVal+','+mmVal+','+maxMonthDays);
                     //p 当前节点前后需要展示的节点个数
                     var maxD = maxMonthDays - 1;
                     var minD = 0;
@@ -515,13 +524,27 @@ let lCalendar = (function() {
                 if (date_hh && date_hh.getAttribute("val")) {
                     //得到日期的值
                     var hhVal = parseInt(date_hh.getAttribute("val"));
-                    var datas = ['（23:00-00:59）子','（01:00-02:59）丑','（03:00-04:59）寅','（05:00-06:59）卯','（07:00-08:59）辰','（09:00-10:59）巳','（11:00-12:59）午',
-                    '（13:00-14:59）未','（15:00-16:59）申','（17:00-18:59）酉','（19:00-20:59）戌','（21:00-22:59）亥']
+                    var hhHtml = [
+                        // 时辰value
+                        {subName:'时辰未知',value:0},
+                        {subName:'23:00-00:59(子)',value:0},
+                        {subName:'01:00-02:59(丑)',value:1},
+                        {subName:'03:00-04:59(寅)',value:2},
+                        {subName:'05:00-06:59(卯)',value:3},
+                        {subName:'07:00-08:59(辰)',value:4},
+                        {subName:'09:00-10:59(巳)',value:5},
+                        {subName:'11:00-12:59(午)',value:6},
+                        {subName:'13:00-14:59(未)',value:7},
+                        {subName:'15:00-16:59(申)',value:8},
+                        {subName:'17:00-18:59(酉)',value:9},
+                        {subName:'19:00-20:59(戌)',value:10},
+                        {subName:'21:00-22:59(亥)',value:11},
+                    ]
                     itemStr = "";
-                    for(var p = 0,len = datas.length; p < len; p++){
-                        itemStr += "<div class='tooth_hh'>" + datas[p] + "</div>";
+                    for(var p = 0,len = hhHtml.length; p < len; p++){
+                        itemStr += "<div class='tooth_hh' data-value="+hhHtml[p].value+">" + hhHtml[p].subName + "</div>";
                     }
-                    
+
                     date_hh.innerHTML = itemStr;
 
                     var minH = _self.maxh -_self.minh;
@@ -540,12 +563,12 @@ let lCalendar = (function() {
                         hhVal = Math.abs(top1 - 10) /2;
                         date_hh.setAttribute("val", hhVal);
                     } else {
-                        date_hh.style["transform"] = 'translate(0,' + (10 - (datas.indexOf(hhVal)+1) * 2) + 'em)';
-                        date_hh.style["-webkit-transform"] = 'translate(0,' + (10 - (datas.indexOf(hhVal)+1) * 2) + 'em)';
-                        date_hh.style["-moz-transform"] = 'translate(0,' + (10 - (datas.indexOf(hhVal)+1) * 2) + 'em)';
-                        date_hh.style["-ms-transform"] = 'translate(0,' + (10 - (datas.indexOf(hhVal)+1) * 2) + 'em)';
-                        date_hh.style["-o-transform"] = 'translate(0,' + (10 - (datas.indexOf(hhVal)+1) * 2) + 'em)';
-                        date_hh.setAttribute('top', 10 - datas[hhVal]* 2 + 'em');
+                        date_hh.style["transform"] = 'translate(0,' + (10 - hhVal * 2) + 'em)';
+                        date_hh.style["-webkit-transform"] = 'translate(0,' + (10 - hhVal * 2) + 'em)';
+                        date_hh.style["-moz-transform"] = 'translate(0,' + (10 - hhVal * 2) + 'em)';
+                        date_hh.style["-ms-transform"] = 'translate(0,' + (10 - hhVal * 2) + 'em)';
+                        date_hh.style["-o-transform"] = 'translate(0,' + (10 - hhVal * 2) + 'em)';
+                        date_hh.setAttribute('top', (10 - hhVal * 2) + 'em');
                     } 
                 }else {
                     return;
@@ -864,7 +887,6 @@ let lCalendar = (function() {
             }
             //触摸开始
             function gearTouchStart(e) {
-                e.preventDefault();
                 var target = e.target;
                 target['touchTip']=false;//滑动锁
                 while (true) {
@@ -1090,9 +1112,9 @@ let lCalendar = (function() {
             function closeMobileCalendar(e) {
                 e.preventDefault();
                 // // 恢复滚动
-                document.body.style.overflow='';
                 document.body.style.position=null;
                 document.body.style.top=null;
+				document.body.style.width= null;
                 window.scrollTo(0,_self.sss);
                 // 
                 if (!window.CustomEvent) {
@@ -1105,37 +1127,45 @@ let lCalendar = (function() {
             function hasPrototype(object,name){
                 return !object.hasOwnProperty(name)&&(name in object);
             }
+            function fillNum(num){
+                if(num >9){
+                    return num;
+                }else{
+                    return '0' + num;
+                }
+            } 
             //日期确认
             function finishMobileDate(e) {
-                
                 var d=getCalendarDate(); 
-                
-                _self.trigger.setAttribute('data-date',d.yy+ "-" + d.mm + "-" +d.dd+' '+d.hh);
-                var inputId=_self.trigger.getAttribute('data-id');
 
-                if(inputId) document.getElementById(inputId).value=_self.type+'-'+d.yy+ "-" + d.mm + "-" +d.dd+'-'+d.hhVal;
+                var hoursData = ['时辰未知','子时','丑时','寅时','卯时','辰时','巳时','午时','未时','申时','酉时','戌时','亥时']
+                
+                _self.trigger.setAttribute('data-date',d.yy+ "-" + d.mm + "-" +d.dd+'-'+d.hh);
+                var inputId=_self.trigger.getAttribute('data-id');
+                if(inputId) document.getElementById(inputId).value=_self.type+'-'+fillNum(d.yy)+ "-" + fillNum(d.mm) + "-" +fillNum(d.dd)+'-'+d.hh_val*2;
                 if(_self.type){
                     var mmChina=d._mm<0?getChinese('rm',-d._mm):getChinese('mm',d._mm);
-                    
                     if(hasPrototype(_self.trigger,'value')){
-                        _self.trigger.value = "农历:"+d._yy+ "年" +mmChina+''+getChinese('dd',d._dd)+' '+d.hh;
+                        _self.trigger.value = "农历:"+d._yy+ "年" +mmChina+''+getChinese('dd',d._dd)+' '+hoursData[d.hh];
+                        _self.trigger.setAttribute('data-cname',"农历"+d._yy+"-"+mmChina+'-'+getChinese('dd',d._dd)+' '+hoursData[d._hh]);
                         _self.success(_self.trigger.value)
                     }else{
                         _self.trigger.style.color = "#333333";
-                        _self.trigger.innerHTML = "农历:"+d._yy+ "年" +mmChina+''+getChinese('dd',d._dd)+' '+d.hh;
+                        _self.trigger.innerHTML = "农历:"+d._yy+ "年" +mmChina+''+getChinese('dd',d._dd)+' '+hoursData[d.hh];
                         _self.success(_self.trigger.innerHTML)
                     }  
                 }else{
-                   
                     if(hasPrototype(_self.trigger,'value')){
-                        _self.trigger.value = "公历:"+d.yy+ "-" + d.mm + "-" +d.dd+' '+d.hh;
+                        _self.trigger.value = "公历:"+d.yy+ "-" + fillNum(d.mm) + "-" +fillNum(d.dd)+' '+hoursData[d.hh];
+                        _self.trigger.setAttribute('data-cname',"公历"+d.yy+ "-" + fillNum(d.mm) + "-" +fillNum(d.dd)+' '+hoursData[d.hh]);
                         _self.success(_self.trigger.value)
                     }else{
                         _self.trigger.style.color = "#333333";
-                        _self.trigger.innerHTML = "公历:"+d.yy+ "-" + d.mm + "-" +d.dd+' '+d.hh;
+                        _self.trigger.innerHTML = "公历:"+d.yy+ "-" + fillNum(d.mm) + "-" +fillNum(d.dd)+' '+hoursData[d.hh];
                         _self.success(_self.trigger.innerHTML)
                     }
                 }
+                _self.trigger.setAttribute('data-value',_self.type+'-'+fillNum(d.yy)+ "-" + fillNum(d.mm) + "-" +fillNum(d.dd)+'-'+d.hh_val*2);
                 closeMobileCalendar(e);
             }
             //设置顶部日期+返回对象 _yy 农历年  yy公历年   
@@ -1146,8 +1176,14 @@ let lCalendar = (function() {
                 var date_mm = parseInt(Math.round(_self.gearDate.querySelector(".date_mm").getAttribute("val"))) + 1;
                 var date_dd = parseInt(Math.round(_self.gearDate.querySelector(".date_dd").getAttribute("val"))) + 1;
                 var date_hh = parseInt(Math.round(_self.gearDate.querySelector(".date_hh").getAttribute("val")));
-                // 判断否有闰月
+                _self.gearDate.querySelector(".date_yy").children[val_yy].style.color = '#CA1A21'
+                _self.gearDate.querySelector(".date_mm").children[date_mm - 1].style.color = '#CA1A21'
+                _self.gearDate.querySelector(".date_dd").children[date_dd - 1].style.color = '#CA1A21'
+                _self.gearDate.querySelector(".date_hh").children[date_hh].style.color = '#CA1A21';
+                var hh_val = _self.gearDate.querySelector(".date_hh").children[date_hh].getAttribute('data-value');
+                // 判断否有闰年
                 var rmNum=LunarCal[val_yy].Intercalation?LunarCal[val_yy].Intercalation:0;
+                // 闰年月份处理
                 if(_self.type && rmNum){
                     if(rmNum==(date_mm-1)){
                         date_mm=-(date_mm-1);
@@ -1157,62 +1193,34 @@ let lCalendar = (function() {
                         date_mm=date_mm;
                     }
                 }
-
                 var objDate=calendarConvert(_self.type,date_yy,date_mm,date_dd,date_hh);
-                var info=_self.gearDate.querySelector(".lcalendar_info");
                 if(_self.type){
                     _self.trigger.setAttribute("data-type", 1);
-                    var mmChina=date_mm<0?getChinese('rm',-date_mm):getChinese('mm',date_mm);
-                    var date_hh = _self.gearDate.querySelector(".date_hh");
-                    if (date_hh && date_hh.getAttribute("val")) {
-                        //得到日期的值
-                        var hhVal = parseInt(date_hh.getAttribute("val"));
-                        var hh_val = hhVal;
-                        var datas = ['子时','丑时','寅时','卯时','辰时','巳时','午时',
-                        '未时','申时','酉时','戌时','亥时',]
-                        info.innerHTML='农历:'+date_yy+'年'+mmChina+''+getChinese('dd',date_dd)+' '+datas[hhVal];
-                    }
-                    objDate.mm=objDate.mm<10?"0"+objDate.mm:objDate.mm;
-                    objDate.dd=objDate.dd<10?"0"+objDate.dd:objDate.dd;
-                    hh_val = hh_val*2>=24?hh_val=0:hh_val;
-                    console.log(hh_val*2)
                     return{
                         yy:objDate.yy,
                         mm:objDate.mm,
                         dd:objDate.dd,
-                        hh:datas[hhVal],
-                        hhVal:hh_val*2,
+                        hh:date_hh, 
+                        hh_val:hh_val, // 修改时辰value
                         _yy:date_yy,
                         _mm:date_mm,
                         _dd:date_dd,
-                        _hh:datas[hhVal],
-                        _hhVal:hh_val*2,
+                        _hh:date_hh,
+                        hh_val:hh_val // 修改时辰value
                     }
                 }else{
                     _self.trigger.setAttribute("data-type", 0);
-                    var date_hh = _self.gearDate.querySelector(".date_hh");
-                    date_mm=date_mm<10?"0"+date_mm:date_mm;
-                    date_dd=date_dd<10?"0"+date_dd:date_dd;
-                    if (date_hh && date_hh.getAttribute("val")) {
-                        //得到日期的值
-                        var hhVal = parseInt(date_hh.getAttribute("val"));
-                        var hh_val = hhVal;
-                        var datas = ['子时','丑时','寅时','卯时','辰时','巳时','午时',
-                        '未时','申时','酉时','戌时','亥时',]
-                        info.innerHTML='公历:'+date_yy+'年'+date_mm+'月'+date_dd+'日'+' '+datas[hhVal];
-                    }
-                    hh_val = hh_val*2>=24?hh_val=0:hh_val;
                     return {
                         _yy:objDate.yy,
                         _mm:objDate.mm,
                         _dd:objDate.dd,
-                        _hh:datas[hhVal],
-                        _hhVal:hh_val*2,
+                        _hh:date_hh,
+                        hh_val:hh_val,
                         yy:date_yy,
                         mm:date_mm,
                         dd:date_dd,
-                        hh:datas[hhVal],
-                        hhVal:hh_val*2,
+                        hh:date_hh,
+                        hh_val:hh_val
                     }
                 }
             }
@@ -1222,9 +1230,9 @@ let lCalendar = (function() {
         }
     }
     return MobileCalendar;
-    
 })()
 
 export default{
-	lCalendar
+    lCalendar
 }
+

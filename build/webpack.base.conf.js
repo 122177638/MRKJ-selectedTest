@@ -4,7 +4,7 @@ var webpack = require('webpack')
 var config = require('../config')
 
 var glob = require('glob');
-var entries =  utils.getMultiEntry('./src/'+config.moduleName+'/**/**/*.js'); // 获得入口js文件
+var entries = utils.getMultiEntry('./src/' + config.moduleName + '/**/**/*.js'); // 获得入口js文件
 
 var chunks = Object.keys(entries);
 
@@ -47,15 +47,15 @@ var webpackConfig = {
   },
   module: {
     rules: [
-//    {
-//      test: /\.(js|vue)$/,
-//      loader: 'eslint-loader',
-//      enforce: 'pre',
-//      include: [resolve('src')],
-//      options: {
-//        formatter: require('eslint-friendly-formatter')
-//      }
-//    },
+   {
+     test: /\.(js|vue)$/,
+     loader: 'eslint-loader',
+     enforce: 'pre',
+     include: [resolve('src')],
+     options: {
+       formatter: require('eslint-friendly-formatter')
+     }
+   },
       {
         test: /\.vue$/,
         loader: 'vue-loader',
@@ -87,8 +87,8 @@ var webpackConfig = {
   },
   plugins: []
 }
-webpackConfig.entry = Object.assign({},webpackConfig.entry, entries);
-webpackConfig.entry = Object.assign({},webpackConfig.entry, compsEntry);
+webpackConfig.entry = Object.assign({}, webpackConfig.entry, entries);
+webpackConfig.entry = Object.assign({}, webpackConfig.entry, compsEntry);
 console.log('----------------------------------------------------------------')
 console.log(webpackConfig.entry)
 console.log('----------------------------------------------------------------')

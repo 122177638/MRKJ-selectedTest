@@ -1,5 +1,5 @@
 require('@assets/css/common.scss')
-require('@assets/fonts/iconfont.css')
+// require('@assets/fonts/iconfont.css')
 import 'mint-ui/lib/style.css'
 import 'vux/src/styles/reset.less'
 require('./flexible.js')
@@ -13,8 +13,3 @@ require('./flexible.js')
 // Vue.use(WechatPlugin)
 
 // import wx from './wx'
-
-// import vueFilter from './vueFilter'
-// export default{
-//   wx
-// }

@@ -12,7 +12,7 @@
                     <div class="mytest_r">查看测算结果</div>
                 </li>
             </ul>
-            <p v-else class="mytestpromt">你还没有测试,<a href="https://www.yixueqm.com/jianceH5/test.html">快去测试吧</a></p>
+            <p v-else class="mytestpromt">你还没有测试,<a href="javscript:history.go(-1);">快去测试吧</a></p>
         </div>
     </div>
 </template>
@@ -39,11 +39,15 @@ export default {
                 })
             } else {
               alert('uid不存在')
-              window.location.href = 'https://www.yixueqm.com/jianceH5/test.html'
+              window.history.go(-1);
             }
       },
     navigateToResult (item) {
-        window.location.href = 'testResult.html?orderid=' + item.orderid
+        if (item.csType == 1) {
+            window.location.href = 'testResult.html?orderid=' + item.orderid
+        } else if (item.csType == 2) {
+            window.location.href = 'testResultQWC.html?orderid=' + item.orderid
+        }
       }
   }
 }
