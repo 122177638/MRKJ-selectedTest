@@ -104,13 +104,15 @@
 			this.getpageData();
 			if (this.hasShareHD) { this.shareMoney(); }
 			window.PayResultCallBack = payMoney135.PayResultCallBack; // jsonp回调
-	    new datePlugin.lCalendar('#datetime') // eslint-disable-line
+			new datePlugin.lCalendar('#datetime') // eslint-disable-line
+			
 	    console.log(
 				'uid:' + this.uid,
 				 'channel:' + this.channel, 
 				 'price:' + this.price,
 				 'csType:' + this.csType,
 			)
+			this.conuntTJ();
   	},
   	methods: {
 	    initData () {
@@ -272,6 +274,28 @@
 				} else {
 					android.toActivity('sm://sm.mrkj.com/me/shareearn') // eslint-disable-line
 				}
+			},
+			conuntTJ () {
+				let _self = this;
+				// 统计进来次数
+				let firstOpen;
+				try {
+					firstOpen = localStorage.getItem('firstOpen');
+					if (firstOpen) {
+						firstOpen++;
+						localStorage.setItem('firstOpen', firstOpen);
+					} else {
+						localStorage.setItem('firstOpen', 1);
+					}
+				} catch (error) {
+					alert('不支持localStorage')
+				}
+				console.log(firstOpen)
+				this.$ajax.post('https://www.yixueqm.com/jiance/index.php/Home-Index-cnzz_pvuv', {channel: _self.channel, typeid: _self.typeid, typeXM: 'jiance', loginNum: firstOpen}).then((response) => {
+				})
+				this.$ajax.post('https://hy.yixueqm.com/zhiming/index.php/Home-Interface-remain', {channel: _self.channel, nickName: '简测', typeName: 'JC' + _self.typeid, uid: _self.uid}).then((response) => {
+					console.log(response)
+				})
 			}
 	  }
 	}

@@ -140,7 +140,20 @@ export default {
                     console.log('友盟未统计')
                 }
             })
-            this.$ajax.post('https://www.yixueqm.com/jiance/index.php/Home-Index-cnzz_pvuv', {channel: _self.channel, typeid: _self.typeid, typeXM: 'jiance2q'}).then((response) => {
+            // 统计进来次数
+            let firstOpen;
+            try {
+                firstOpen = localStorage.getItem('firstOpen');
+                if (firstOpen) {
+                    firstOpen++;
+                    localStorage.setItem('firstOpen', firstOpen);
+                } else {
+                    localStorage.setItem('firstOpen', 1);
+                }
+            } catch (error) {
+                alert('不支持localStorage')
+            }
+            this.$ajax.post('https://www.yixueqm.com/jiance/index.php/Home-Index-cnzz_pvuv', {channel: _self.channel, typeid: _self.typeid, typeXM: 'jiance2q', loginNum: firstOpen}).then((response) => {
             })
         },
         getpageData () {

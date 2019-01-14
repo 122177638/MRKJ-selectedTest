@@ -199,7 +199,9 @@ export default {
     console.log(this.urlparams)
     if (this.urlparams.orderid) {
       this.orderid = this.urlparams.orderid
-      this.axios()
+      this.axios();
+      // 统计
+      this.$ajax.post('https://hy.yixueqm.com/zhiming/index.php/Home-Interface-remain', {channel: sessionStorage.getItem('channel'), nickName: '简测', typeName: 'JC' + localStorage.getItem('typeid') + '-J', uid: localStorage.getItem('uid')}).then((response) => {})
     } else {
       alert('没有该订单')
       window.history.go(-1);

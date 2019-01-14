@@ -53,10 +53,10 @@ export default {
   methods: {
     getmoreTest () {
       let _self = this
-      this.$ajax.post('https://www.yixueqm.com/jiance/index.php/Home-Index-moreselftestsup', {page: _self.page, online: 0, typeid: localStorage.getItem('typeid')}).then((response) => {
+      this.$ajax.post('https://hy.yixueqm.com/quce/index.php/home-index-moreselftestsup', {page: _self.page, online: 0, typeid: localStorage.getItem('typeid')}).then((response) => {
 				console.log(response.data)
 				if (response.data.code) {
-          let data = JSON.parse(response.data.content)
+          let data = response.data.content;
           _self.moreTestData = _self.moreTestData.concat(data)
           _self.loadshow = false
         } else {
